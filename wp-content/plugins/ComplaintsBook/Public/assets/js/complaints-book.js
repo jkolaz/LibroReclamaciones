@@ -9,53 +9,53 @@
                 'cbo-business-name': {
                     required: true,
                 },
-                // 'txt-name': {
-                //     required: true,
-                // },
-                // 'txt-lastname': {
-                //     required: true,
-                // },
-                // 'txt-phone': {
-                //     required: true,
-                // },
-                // 'txt-document-number': {
-                //     required: true,
-                // },
-                // 'txt-address': {
-                //     required: true,
-                // },
-                // 'txt-email': {
-                //     required: true,
-                //     email: true
-                // },
-                // 'cbo-type-service': {
-                //     required: true,
-                //     email: true
-                // },
-                // 'txt-amount': {
-                //     required: true,
-                //     email: true
-                // },
-                // 'txt-description': {
-                //     required: true,
-                //     email: true
-                // },
-                // 'cbo-type-claim': {
-                //     required: true,
-                //     email: true
-                // },
-                // 'txt-detail': {
-                //     required: true,
-                //     email: true
-                // },
-                // 'txt-request': {
-                //     required: true,
-                //     email: true
-                // },
-                // 'rd-privacy-policy': {
-                //     required: true,
-                //     email: true
-                // }
+                'txt-name': {
+                    required: true,
+                },
+                'txt-lastname': {
+                    required: true,
+                },
+                'txt-phone': {
+                    required: true,
+                },
+                'txt-document-number': {
+                    required: true,
+                },
+                'txt-address': {
+                    required: true,
+                },
+                'txt-email': {
+                    required: true,
+                    email: true
+                },
+                'cbo-type-service': {
+                    required: true,
+                    email: true
+                },
+                'txt-amount': {
+                    required: true,
+                    email: true
+                },
+                'txt-description': {
+                    required: true,
+                    email: true
+                },
+                'cbo-type-claim': {
+                    required: true,
+                    email: true
+                },
+                'txt-detail': {
+                    required: true,
+                    email: true
+                },
+                'txt-request': {
+                    required: true,
+                    email: true
+                },
+                'rd-privacy-policy': {
+                    required: true,
+                    email: true
+                }
             },
 
         });
