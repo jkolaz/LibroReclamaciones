@@ -1,0 +1,4 @@
+/.idea
+*/vendor
+wp-config.php
+/wp-content/plugins/ComplaintsBook/node_modules/
