@@ -2,3 +2,4 @@
 */vendor
 wp-config.php
 /wp-content/plugins/ComplaintsBook/node_modules/
+/wp-content/debug.log

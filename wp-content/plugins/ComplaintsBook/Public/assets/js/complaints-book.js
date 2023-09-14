@@ -30,34 +30,27 @@
                 },
                 'cbo-type-service': {
                     required: true,
-                    email: true
                 },
                 'txt-amount': {
                     required: true,
-                    email: true
                 },
                 'txt-description': {
                     required: true,
-                    email: true
                 },
                 'cbo-type-claim': {
                     required: true,
-                    email: true
                 },
                 'txt-detail': {
                     required: true,
-                    email: true
                 },
                 'txt-request': {
                     required: true,
-                    email: true
                 },
                 'rd-privacy-policy': {
                     required: true,
-                    email: true
                 }
             },
-
+            errorElement: "em"
         });
 
         formComplaints.on('submit', function(e) {
