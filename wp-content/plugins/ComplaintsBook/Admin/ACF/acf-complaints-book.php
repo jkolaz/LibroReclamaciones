@@ -230,7 +230,7 @@ acf_add_local_field_group( array(
             ),
             'choices' => array(
                 'good' => 'Bien',
-                'service: Servicio' => 'service: Servicio',
+                'service' => 'Servicio',
             ),
             'default_value' => false,
             'return_format' => 'value',

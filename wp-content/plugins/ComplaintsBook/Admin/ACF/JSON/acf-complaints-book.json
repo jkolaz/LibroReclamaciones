@@ -225,7 +225,7 @@
                 },
                 "choices": {
                     "good": "Bien",
-                    "service: Servicio": "service: Servicio"
+                    "service": "Servicio"
                 },
                 "default_value": false,
                 "return_format": "value",

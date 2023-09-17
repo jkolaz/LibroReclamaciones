@@ -4,6 +4,7 @@ namespace ComplaintsBook\Services;
 use ComplaintsBook\Includes\ComplaintsBook;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use function EasyWPSMTP\Vendor\GuzzleHttp\Psr7\str;
 
 class ComplaintsBookService
 {
@@ -41,6 +42,26 @@ class ComplaintsBookService
         'txt-detail' => 'El campo detalle es obligatorio.',
         'txt-request' => 'El campo petición es obligatorio.',
         'rd-privacy-policy' => 'Debe de aceptar las politicas de privicidad.'
+    ];
+
+    const VARIABLES = [
+        'claim_number'              => 'column=>fields.cb_code',
+        'claim_day'                 => 'function=>getDate|fields.cb_date,day',
+        'claim_month'               => 'function=>getDate|fields.cb_date,month',
+        'claim_year'                => 'function=>getDate|fields.cb_date,year',
+        'consumer_name'             => 'function=>getName|fields.cb_name,fields.cb_lastname',
+        'consumer_address'          => 'column=>fields.cb_address',
+        'consumer_number_document'  => 'column=>fields.cb_document_nmber',
+        'consumer_phone_email'      => 'function=>getContact|fields.cb_phone,fields.cb_email',
+        'consumer_tutor'            => 'column=>fields.cb_tutor',
+        'well_hired_product'        => 'function=>getWillHired|fields.cb_goods_or_services,product',
+        'well_hired_service'        => 'function=>getWillHired|fields.cb_goods_or_services,service',
+        'well_hired_amount'         => 'column=>fields.cb_amount',
+        'well_hired_description'    => 'column=>fields.cb_description',
+        'claim_details_claim'       => 'function=>getComplaint|fields.cb_type,claim',
+        'claim_details_complaint'   => 'function=>getComplaint|fields.cb_type,complaint',
+        'claim_detail'              => 'column=>fields.cb_detail',
+        'claim_details_request'     => 'column=>fields.cb_request',
     ];
 
     /**
@@ -273,6 +294,7 @@ class ComplaintsBookService
         if (!empty($templateId)) {
             $title = $data['post']['post_title'];
             $template = get_field('template_html', $templateId);
+            $template = $this->replaceVariables($template, $data);
 
             $options = new Options();
             $options->set('isHtml5ParserEnabled', true);
@@ -341,8 +363,7 @@ class ComplaintsBookService
             $form = wpcf7_contact_form($templateMailId);
 
             if ( !empty($form) ) {
-
-                $name = $fields['name'] . ' ' . $fields['lastname'];
+                $name = $fields['cb_name'] . ' ' . $fields['cb_lastname'];
                 $template = $form->prop( 'mail' );
 
                 $template = str_replace('[your-subject]', $fields['cb_code'], $template );
@@ -354,11 +375,212 @@ class ComplaintsBookService
 
                 $attachment = [];
                 if ($filename !== '') {
+                    $wp_upload_dir = wp_upload_dir();
+                    $filename = $wp_upload_dir['path'] . DIRECTORY_SEPARATOR . $filename;
                     $attachment = [$filename];
                 }
 
                 wp_mail( $template['recipient'], $template['subject'], $template['body'], $headers, $attachment );
             }
         }
+    }
+
+    /**
+     * @param string $template
+     * @param array $data
+     * @return string
+     */
+    private function replaceVariables(string $template, array $data) :string
+    {
+        $variables = self::VARIABLES;
+
+        foreach ($variables as $key => $variable) {
+            $template = str_replace('{' . $key . '}', $this->replaceVariable($variable, $data), $template);
+        }
+
+        return $template;
+    }
+
+    /**
+     * @param string $replace
+     * @param array $data
+     * @return string
+     */
+    private function replaceVariable(string $replace, array $data) :string
+    {
+        $textReplace = '';
+
+        $isColumn = strpos($replace, 'column=>');
+        if (!is_bool($isColumn)) {
+            $field = str_replace('column=>', '', $replace);
+            $textReplace = $this->replaceColumn($field, $data);
+        }
+
+        $isFunction = strpos($replace, 'function=>');
+        if (!is_bool($isFunction)) {
+            $dataFunction = str_replace('function=>', '', $replace);
+            $textReplace = $this->replaceFunction($dataFunction, $data);
+        }
+
+        return $textReplace;
+    }
+
+    /**
+     * @param string $field
+     * @param $data
+     * @return string
+     */
+    private function replaceColumn(string $field, $data) :string
+    {
+        $search = explode('.', $field);
+        $textReplace = $data[$search[0]][$search[1]];
+
+        return !empty($textReplace) ? nl2br($textReplace) : '';
+    }
+
+    /**
+     * @param string $dataFunction
+     * @param $data
+     * @return string
+     */
+    private function replaceFunction(string $dataFunction, $data) :string
+    {
+        $textReplace = '';
+        $arrDataFunction = explode('|', $dataFunction);
+        if (count($arrDataFunction) > 1) {
+            $function = $arrDataFunction[0];
+            $params = explode(',', $arrDataFunction[1]);
+            $params = $this->getParams($params, $data);
+
+            switch ($function) {
+                case 'getDate':
+                    $textReplace = $this->getDate($params[0], $params[1]);
+                    break;
+                case 'getName':
+                    $textReplace = $this->getName($params[0], $params[1]);
+                    break;
+                case 'getContact':
+                    $textReplace = $this->getContact($params[0], $params[1]);
+                    break;
+                case 'getWillHired':
+                    $textReplace = $this->getWillHired($params[0], $params[1]);
+                    break;
+                case 'getComplaint':
+                    $textReplace = $this->getComplaint($params[0], $params[1]);
+                    break;
+            }
+        }
+
+        return $textReplace;
+    }
+
+    /**
+     * @param array $params
+     * @param array $data
+     * @return array
+     */
+    private function getParams(array $params, array $data) :array
+    {
+        foreach ($params as $key => $param) {
+            $isField = strpos($param, 'fields.');
+
+            if(!is_bool($isField)) {
+                $search = explode('.', $param);
+                $textReplace = $data[$search[0]][$search[1]];
+                $value = !empty($textReplace) ? nl2br($textReplace) : '';
+                $params[$key] = $value;
+            }
+        }
+
+        return $params;
+    }
+
+    /**
+     * @param string $date
+     * @param string $format
+     * @return string
+     */
+    private function getDate(string $date, string $format) :string
+    {
+        return match ($format) {
+            'day' => '[' . date('d', strtotime($date)) . ']',
+            'month' => '[' . date('m', strtotime($date)) . ']',
+            'year' => '[' . date('Y', strtotime($date)) . ']',
+            default => '',
+        };
+    }
+
+    /**
+     * @param string $name
+     * @param string $lastname
+     * @return string
+     */
+    private function getName(string $name, string $lastname) :string
+    {
+        $name = trim($name);
+        $lastname = trim($lastname);
+
+        return $name . ($lastname !== '' ? ' ' . $lastname : '');
+    }
+
+    /**
+     * @param string $phone
+     * @param string $email
+     * @return string
+     */
+    private function getContact(string $phone, string $email) :string
+    {
+        $textReplace = [];
+
+        if ($phone !== '') {
+            $textReplace[] = $phone;
+        }
+
+        if ($email !== '') {
+            $textReplace[] = $email;
+        }
+
+        return implode(' / ', $textReplace);
+    }
+
+    /**
+     * @param string $field
+     * @param string $type
+     * @return string
+     */
+    private function getWillHired(string $field, string $type) :string
+    {
+        $textReplace = '';
+
+        switch ($type) {
+            case 'product':
+                $textReplace = $field === 'good' ? '<b>X</b>' : '';
+                break;
+            case 'service':
+                $textReplace = $field === 'service' ? '<b>X</b>' : '';
+                break;
+        }
+
+        return $textReplace;
+    }
+
+    /**
+     * @param string $field
+     * @param string $type
+     * @return string
+     */
+    private function getComplaint(string $field, string $type) :string
+    {
+        $textReplace = '';
+        switch ($type) {
+            case 'claim':
+                $textReplace = $field === 'claim' ? '<b>X</b>' : '';
+                break;
+            case 'complaint':
+                $textReplace = $field === 'complaint' ? '<b>X</b>' : '';
+                break;
+        }
+
+        return $textReplace;
     }
 }
