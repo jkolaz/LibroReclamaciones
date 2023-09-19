@@ -3,6 +3,8 @@
     $( function() {
         const formComplaints = $('#form-complaints-book');
         const btnSubmit = $('#btn-submit');
+        const cboBusinessName = $('#cbo-business-name');
+        const txtCorrelative = $('#txt-correlative');
 
         formComplaints.validate({
             rules: {
@@ -86,6 +88,25 @@
                     btnSubmit.removeAttr( 'disabled' );
                 }
             });
+        });
+
+        cboBusinessName.on('change', function(e) {
+            const $this = $(this);
+            const value = $this.val();
+
+            e.preventDefault();
+
+            txtCorrelative.val('');
+
+            if(value !== '' || value !== 0) {
+                const projects = cbData.projects;
+                const filter = projects.filter(e => parseInt(e.id) === parseInt(value) );
+
+                if(filter && filter[0]) {
+                    const newValue = `Hoja de Reclamación [${filter[0].correlative}]`;
+                    txtCorrelative.val(newValue);g
+                }
+            }
         });
     });
 }( jQuery ) );

@@ -3,8 +3,6 @@
 Template Name: Libro de reclamaciones
 */
 global $complaintsBookPublic;
-//$complaintsBookPublic->generatePDF();
-//exit;
 
 get_header();
 
