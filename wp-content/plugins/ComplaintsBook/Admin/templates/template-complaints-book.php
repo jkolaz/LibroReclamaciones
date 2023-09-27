@@ -1,6 +1,6 @@
 <?php
 /*
-Template Name: Libro de reclamaciones
+Template Name: Libro de reclamaciones v2
 */
 global $complaintsBookPublic;
 
@@ -11,7 +11,6 @@ $opciones = get_field('cb_goods_or_services');
 $corporateNames = $complaintsBookPublic->getCorporateNames();
 ?>
 <div class="container">
-    <div class="content-alert"></div>
     <form id="form-complaints-book" method="post" >
         <input type="hidden" name="action" value="register-complaints-book">
         <div class="section">

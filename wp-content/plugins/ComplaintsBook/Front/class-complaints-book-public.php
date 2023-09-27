@@ -1,5 +1,5 @@
 <?php
-namespace ComplaintsBook\Public;
+namespace ComplaintsBook\Front;
 
 use ComplaintsBook\Includes\ComplaintsBook;
 use ComplaintsBook\Includes\ComplaintsBookLoader;
@@ -29,7 +29,8 @@ class ComplaintsBookPublic
     public function enqueue_styles()
     {
         $fileName = 'complaints-book.css';
-        wp_enqueue_style( $this->complaintsBook, plugin_dir_url( COMPLAINTS_BOOK_FILE ) . 'public/assets/css/' . $fileName, array(), $this->version, 'all' );
+        wp_enqueue_style( 'material-design', "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200", array(), $this->version, 'all' );
+        wp_enqueue_style( $this->complaintsBook, plugin_dir_url( COMPLAINTS_BOOK_FILE ) . 'Front/assets/css/' . $fileName, array(), $this->version, 'all' );
     }
 
     /**
@@ -39,7 +40,7 @@ class ComplaintsBookPublic
     {
         $fileName = 'complaints-book.js';
         wp_enqueue_script('jquery-validate', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.1/jquery.validate.min.js', array('jquery'));
-        wp_enqueue_script( $this->complaintsBook, plugin_dir_url( COMPLAINTS_BOOK_FILE ) . 'public/assets/js/' . $fileName, array( 'jquery' ), $this->version, false );
+        wp_enqueue_script( $this->complaintsBook, plugin_dir_url( COMPLAINTS_BOOK_FILE ) . 'Front/assets/js/' . $fileName, array( 'jquery' ), $this->version, false );
         wp_localize_script( $this->complaintsBook, 'cbData', $this->getData());
     }
 
@@ -159,6 +160,19 @@ class ComplaintsBookPublic
         }
     }
 
+    public function getCorrelative()
+    {
+        $id = $_POST['id'];
+        $correlative = get_field('cn_correlative', $id);
+        $number = get_field('cn_number', $id);
+        $newCorrelative = $this->complaintBookService->getCorrelative($correlative, $number);
+
+        echo wp_json_encode([
+            'correlative' => $newCorrelative
+        ]);
+        wp_die();
+    }
+
     /**
      * @return array
      */
@@ -175,7 +189,7 @@ class ComplaintsBookPublic
                 $id = $post->ID;
                 $correlative = get_field('cn_correlative', $id);
                 $number = get_field('cn_number', $id);
-                if (!empty($number)) {
+                if (empty($number)) {
                     $number = 1;
                 }
 

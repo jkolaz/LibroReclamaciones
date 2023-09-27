@@ -68,7 +68,7 @@ class ComplaintsBookService
      * @param array $data
      * @return array|true
      */
-    public function validateData(array $data) :array|bool
+    public function validateData(array $data)
     {
         $validate = true;
         foreach ($data as $key => $value) {
@@ -88,7 +88,7 @@ class ComplaintsBookService
      * @param array $data
      * @return string|null
      */
-    public function register(array $data) :string|null
+    public function register(array $data)
     {
         $file = null;
         $data = $this->prepareData($data);
@@ -98,7 +98,7 @@ class ComplaintsBookService
             $this->registerAcf($idPost, $data['fields']);
 
             $businessName = $data['business_name'];
-            $this->updateCorrelative($businessName->id, $businessName->correlative);
+            $this->updateCorrelative($businessName->id);
 
             $file = $this->generatePDF($idPost, $data);
             $this->sendMail($idPost, $data, $file);
@@ -123,10 +123,9 @@ class ComplaintsBookService
      * @param string $currentCode
      * @return void
      */
-    private function updateCorrelative(int $id, string $currentCode) :void
+    private function updateCorrelative(int $id) :void
     {
-        $arrCode = explode(self::SEPARATOR_CORRELATIVE, $currentCode);
-        $number = $arrCode[1] ?? 0;
+        $number = get_field('cn_number', $id);
         $number = (int)$number;
 
         update_field('cn_number', ($number + 1), $id);
@@ -160,7 +159,7 @@ class ComplaintsBookService
      * @param array $data
      * @return array|null
      */
-    private function prepareData(array $data) :array|null
+    private function prepareData(array $data)
     {
         $dataPost = null;
 
@@ -234,6 +233,21 @@ class ComplaintsBookService
         return $title;
     }
 
+    public function getCorrelative($correlative, $number) {
+        $correlative = str_replace('{year}', date('Y'), $correlative);
+
+        $match = preg_match('/{number-[0-9]{1,2}}/', $correlative);
+        if ($match) {
+            preg_match('/{number-(\d{1,2})}/', $correlative, $matches);
+            $n = $matches[1];
+            $replace = '{number-' . $n . '}';
+            $paddedNumber = str_pad($number, $n, "0", STR_PAD_LEFT);
+            $correlative = str_replace($replace, $paddedNumber, $correlative);
+        }
+
+        return $correlative;
+    }
+
     /**
      * @param object $data
      * @return string
@@ -247,7 +261,7 @@ class ComplaintsBookService
      * @param int $id
      * @return object|null
      */
-    private function getCorporateName(int $id) :object|null
+    private function getCorporateName(int $id)
     {
         $data = null;
         $post = get_post($id);
@@ -258,18 +272,14 @@ class ComplaintsBookService
             $number = get_field('cn_number', $id);
             $correlative = get_field('cn_correlative', $id);
 
-            if(!empty($number)) {
-                $correlative .= self::SEPARATOR_CORRELATIVE . $number;
-            } else {
-                $correlative .= self::SEPARATOR_CORRELATIVE . 1;
-            }
+            $newCorrelative = $this->getCorrelative($correlative, $number);
 
             $data = (object)[
                 'id' => $id,
                 'name' => $post->post_title,
                 'ruc' => get_field('cn_ruc', $id),
                 'email' => get_field('cn_email', $id),
-                'correlative' => $correlative,
+                'correlative' => $newCorrelative,
                 'address' => get_field('cn_address', $id),
                 'template_id' => get_field('cn_template', $id),
                 'template_mail' => get_field('cn_template_mail', $id),
@@ -284,7 +294,7 @@ class ComplaintsBookService
      * @param array $data
      * @return string|null
      */
-    private function generatePDF(int $postId, array $data) :string|null
+    private function generatePDF(int $postId, array $data)
     {
         $businessName = $data['business_name'];
         $templateId = $businessName->template_id;
@@ -502,12 +512,28 @@ class ComplaintsBookService
      */
     private function getDate(string $date, string $format) :string
     {
-        return match ($format) {
-            'day' => '[' . date('d', strtotime($date)) . ']',
-            'month' => '[' . date('m', strtotime($date)) . ']',
-            'year' => '[' . date('Y', strtotime($date)) . ']',
-            default => '',
-        };
+//        return match ($format) {
+//            'day' => '[' . date('d', strtotime($date)) . ']',
+//            'month' => '[' . date('m', strtotime($date)) . ']',
+//            'year' => '[' . date('Y', strtotime($date)) . ']',
+//            default => '',
+//        };
+        switch ($format) {
+            case 'day':
+                $text = '[' . date('d', strtotime($date)) . ']';
+                break;
+            case 'month':
+                $text = '[' . date('m', strtotime($date)) . ']';
+                break;
+            case 'year':
+                $text = '[' . date('Y', strtotime($date)) . ']';
+                break;
+            default:
+                $text = '';
+
+        }
+
+        return $text;
     }
 
     /**

@@ -201,3 +201,22 @@ ul.disclaimer {
     color: var(--color-black);
     font-size: 14px;
 }
+
+.alert {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.alert-success {
+    background-color: var(--success-bg);
+    color: var(--color-white);
+}
+.alert-danger {
+    background-color: var(--danger-bg);
+    color: var(--color-white);
+}

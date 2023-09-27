@@ -31,7 +31,7 @@ if ( ! defined('COMPLAINTS_BOOK_IMAGES') ) {
 
 require_once( COMPLAINTS_BOOK_PATH . 'vendor/autoload.php' );
 
-require_once( COMPLAINTS_BOOK_PATH . 'includes/autoloader.php' );
+require_once( COMPLAINTS_BOOK_PATH . 'Includes/autoloader.php' );
 
 function activate_complaints_book() :void {
     \ComplaintsBook\Includes\ComplaintsBookActivator::activate();

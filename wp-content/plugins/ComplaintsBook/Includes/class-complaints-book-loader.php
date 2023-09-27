@@ -18,7 +18,7 @@ class ComplaintsBookLoader
     /**
      * @return self|null
      */
-    public static function getInstance() :self|null
+    public static function getInstance() :self
     {
         if ( null === self::$instance) {
             self::$instance = new self;

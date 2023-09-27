@@ -2,7 +2,7 @@
 namespace ComplaintsBook\Includes;
 
 use ComplaintsBook\Admin\ComplaintsBookAdmin;
-use ComplaintsBook\Public\ComplaintsBookPublic;
+use ComplaintsBook\Front\ComplaintsBookPublic;
 
 class ComplaintsBook
 {
@@ -78,12 +78,14 @@ class ComplaintsBook
         $this->loader->add_filter( 'wp_mail_content_type', $plugin_public, 'set_content_type' );
         $this->loader->add_action( 'wp_ajax_register-complaints-book', $plugin_public, 'registerComplaintsBook' );
         $this->loader->add_action( 'wp_ajax_nopriv_register-complaints-book', $plugin_public, 'registerComplaintsBook' );
+        $this->loader->add_action( 'wp_ajax_get-correlative', $plugin_public, 'getCorrelative' );
+        $this->loader->add_action( 'wp_ajax_nopriv_get-correlative', $plugin_public, 'getCorrelative' );
     }
 
     /**
      * @return mixed
      */
-    public function getPublicClass() :mixed
+    public function getPublicClass()
     {
         return $this->publicClass;
     }
@@ -97,9 +99,9 @@ class ComplaintsBook
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function get_complaints_book() :mixed
+    public function get_complaints_book() :string
     {
         return $this->complaints_book;
     }
